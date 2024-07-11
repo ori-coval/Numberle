@@ -14,7 +14,7 @@ A wordle-like game but with numbers
 | 1000 | 18.308 | 1000 |
 | 10000 | 21.68 | 100 |
 | 100000 | 25.2 | 10 |
-| 250000 | it is still running 😖 | 5 |
+| 250000 | 26.2 | 5 |
   
 * A time and number of guesses solving tester with basic graphing capability
 * ![image](https://github.com/ori-coval/Numberle/assets/95046996/740f7340-1fe2-4469-b712-7d5a044f299c)
