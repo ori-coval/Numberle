@@ -4,34 +4,50 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Set;
 
 import javax.swing.JFrame;
 
 public class NumberleSolver {
-    private static int NUMBER_LENGTH = 5;
+    private static int numberLength = 5;
     private static Set<Integer> excludedDigits;
     private static int[] finalNumber;
     private static List<Integer> foundInWrongSpot;
     private static Set<Integer>[] notHere;
 
+    // Constants for test configurations
+    private static final int REGULAR_TEST_NUM_TRIALS = 5;
+    private static final int LENGTH_EFFECT_NUM_TRIALS = 100;
+    private static final int LENGTH_EFFECT_MAX_LENGTH = 100;
+    private static final int LENGTH_EFFECT_NUM_ITERATIONS = 3;
+
+
+
     public static void main(String[] args) {
-        // regularTest();
-        testLengthsEffect();
+
+        System.out.println("enter 1 for regular test, 2 for length effect test");
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+        if (choice == 1) {
+            regularTest();
+        } else if (choice == 2) {
+            testLengthsEffect();
+        }
+
+        scanner.close();
     }
 
     public static void regularTest() {
-
-        int numTrials = 5;
         int totalGuesses = 0;
         int maxGuesses = 0;
         int minGuesses = Integer.MAX_VALUE;
 
         long startTime = System.nanoTime();
 
-        for (int trial = 0; trial < numTrials; trial++) {
+        for (int trial = 0; trial < REGULAR_TEST_NUM_TRIALS; trial++) {
             resetGameState();
-            Numberle game = new Numberle(NUMBER_LENGTH);
+            Numberle game = new Numberle(numberLength);
 
             int numGuesses = 0;
             while (true) {
@@ -53,7 +69,6 @@ public class NumberleSolver {
                     processFeedback(feedback, guess); // Your algorithm processes the feedback
                 }
             }
-
         }
 
         long endTime = System.nanoTime();
@@ -61,7 +76,8 @@ public class NumberleSolver {
 
         System.out.println("Execution time: " + durationInSeconds + " seconds");
 
-        double averageGuesses = (double) totalGuesses / numTrials;
+        double averageGuesses = (double) totalGuesses / REGULAR_TEST_NUM_TRIALS;
+        System.out.println("number of digits: " + numberLength);
         System.out.println("Average guesses: " + averageGuesses);
         System.out.println("Maximum guesses: " + maxGuesses);
         System.out.println("Minimum guesses: " + minGuesses);
@@ -73,26 +89,23 @@ public class NumberleSolver {
      * @apiNote notice: this function overwrites "NUMBER_LENGTH" initial value
      */
     public static void testLengthsEffect() {
-
         List<Map<Double, Double>> dataPoints = new ArrayList<>();
 
-        for (int j = 0; j < 2; j++) {
+        for (int iteration = 0; iteration < LENGTH_EFFECT_NUM_ITERATIONS; iteration++) {
+            Map<Double, Double> avgGuessesPerDigit = new HashMap<>();
 
-            Map<Double, Double> avgGussesPerDigit = new HashMap<>();
+            for (int length = 1; length <= LENGTH_EFFECT_MAX_LENGTH; length++) {
+                numberLength = length;
 
-            for (int i = 1; i <= 100; i++) {
-                NUMBER_LENGTH = i;
-
-                int numTrials = 100;
                 int totalGuesses = 0;
                 int maxGuesses = 0;
                 int minGuesses = Integer.MAX_VALUE;
 
                 long startTime = System.nanoTime();
 
-                for (int trial = 0; trial < numTrials; trial++) {
+                for (int trial = 0; trial < LENGTH_EFFECT_NUM_TRIALS; trial++) {
                     resetGameState();
-                    Numberle game = new Numberle(NUMBER_LENGTH);
+                    Numberle game = new Numberle(numberLength);
 
                     int numGuesses = 0;
                     while (true) {
@@ -114,7 +127,6 @@ public class NumberleSolver {
                             processFeedback(feedback, guess); // Your algorithm processes the feedback
                         }
                     }
-
                 }
 
                 long endTime = System.nanoTime();
@@ -122,15 +134,16 @@ public class NumberleSolver {
 
                 System.out.println("Execution time: " + durationInSeconds + " seconds");
 
-                double averageGuesses = (double) totalGuesses / numTrials;
+                double averageGuesses = (double) totalGuesses / LENGTH_EFFECT_NUM_TRIALS;
+                System.out.println("number of digits: " + numberLength);
                 System.out.println("Average guesses: " + averageGuesses);
                 System.out.println("Maximum guesses: " + maxGuesses);
                 System.out.println("Minimum guesses: " + minGuesses);
 
-                avgGussesPerDigit.put(Double.valueOf(NUMBER_LENGTH), averageGuesses);
+                avgGuessesPerDigit.put(Double.valueOf(numberLength), averageGuesses);
             }
 
-            dataPoints.add(avgGussesPerDigit);
+            dataPoints.add(avgGuessesPerDigit);
         }
 
         // Create JFrame and add graph panel
@@ -145,9 +158,9 @@ public class NumberleSolver {
     @SuppressWarnings("unchecked")
     private static void resetGameState() {
         excludedDigits = new HashSet<>();
-        finalNumber = new int[NUMBER_LENGTH];
+        finalNumber = new int[numberLength];
         foundInWrongSpot = new ArrayList<>();
-        notHere = new HashSet[NUMBER_LENGTH];
+        notHere = new HashSet[numberLength];
         for (int i = 0; i < notHere.length; i++) {
             notHere[i] = new HashSet<>();
         }
@@ -155,8 +168,8 @@ public class NumberleSolver {
 
     private static int[] generateGuess() {
         Random rand = new Random();
-        int[] guess = new int[NUMBER_LENGTH];
-        for (int i = 0; i < NUMBER_LENGTH; i++) {
+        int[] guess = new int[numberLength];
+        for (int i = 0; i < numberLength; i++) {
             if (finalNumber[i] != 0) {
                 guess[i] = finalNumber[i];
                 continue;
