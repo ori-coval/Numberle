@@ -18,8 +18,8 @@ public class NumberleSolver {
     private static Map<Double, Double> avgGussesPerDigit = new HashMap<>();
 
     public static void main(String[] args) {
-        regularTest();
-        // testLengthsEffabgect();
+        // regularTest();
+        testLengthsEffect();
     }
 
     public static void regularTest() {
