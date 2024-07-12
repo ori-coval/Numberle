@@ -4,19 +4,33 @@ import java.awt.*;
 import java.util.*;
 
 class GraphPanel extends JPanel {
-    private Map<Double, Double> dataPoints; // Map of data points to plot
+    private List<Map<Double, Double>> dataPointsList; // List of maps for multiple graphs
     private static final int padding = 50; // Padding for axes and labels
+    private static final Color[] COLORS = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA}; // Array of colors for different graphs
 
     // Constructor
-    public GraphPanel(Map<Double, Double> dataPoints) {
-        this.dataPoints = new HashMap<>();
-        // Convert int keys and values to Double
-        for (Map.Entry<Double, Double> entry : dataPoints.entrySet()) {
-            this.dataPoints.put(entry.getKey().doubleValue(), entry.getValue().doubleValue());
+    public GraphPanel(List<Map<Double, Double>> dataPointsList) {
+        this.dataPointsList = new ArrayList<>();
+        // Convert int keys and values to Double for each set of data points
+        for (Map<Double, Double> dataPoints : dataPointsList) {
+            Map<Double, Double> convertedMap = new HashMap<>();
+            for (Map.Entry<Double, Double> entry : dataPoints.entrySet()) {
+                convertedMap.put(entry.getKey().doubleValue(), entry.getValue().doubleValue());
+            }
+            this.dataPointsList.add(convertedMap);
         }
     }
 
-    // Override paintComponent to draw the line graph
+    public GraphPanel(Map<Double, Double> dataPoints) {
+        this.dataPointsList = new ArrayList<>();
+        Map<Double, Double> convertedMap = new HashMap<>();
+        for (Map.Entry<Double, Double> entry : dataPoints.entrySet()) {
+            convertedMap.put(entry.getKey().doubleValue(), entry.getValue().doubleValue());
+        }
+        this.dataPointsList.add(convertedMap);
+    }
+
+    // Override paintComponent to draw the line graphs
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -26,10 +40,17 @@ class GraphPanel extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Determine data range for x and y axes
-        double minX = Collections.min(dataPoints.keySet());
-        double maxX = Collections.max(dataPoints.keySet());
-        double minY = Collections.min(dataPoints.values());
-        double maxY = Collections.max(dataPoints.values());
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+
+        for (Map<Double, Double> dataPoints : dataPointsList) {
+            minX = Math.min(minX, Collections.min(dataPoints.keySet()));
+            maxX = Math.max(maxX, Collections.max(dataPoints.keySet()));
+            minY = Math.min(minY, Collections.min(dataPoints.values()));
+            maxY = Math.max(maxY, Collections.max(dataPoints.values()));
+        }
 
         // Calculate dimensions based on data range
         int width = getWidth() - 2 * padding;
@@ -54,8 +75,16 @@ class GraphPanel extends JPanel {
             g2d.drawString(String.format("%.1f", i), padding - 30, y + 5);
         }
 
-        // Plot points and connect with lines
-        g2d.setColor(Color.RED);
+        // Plot each graph
+        for (int index = 0; index < dataPointsList.size(); index++) {
+            Map<Double, Double> dataPoints = dataPointsList.get(index);
+            Color color = COLORS[index % COLORS.length]; // Cycle through predefined colors
+            plotGraph(g2d, dataPoints, color, minX, maxX, minY, maxY, width, height);
+        }
+    }
+
+    private void plotGraph(Graphics2D g2d, Map<Double, Double> dataPoints, Color color, double minX, double maxX, double minY, double maxY, int width, int height) {
+        g2d.setColor(color);
         List<Double> xValues = new ArrayList<>(dataPoints.keySet());
         Collections.sort(xValues); // Sort x values for consistent plotting order
 
@@ -80,5 +109,41 @@ class GraphPanel extends JPanel {
                 g2d.drawLine(prevPx, prevPy, px, py);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        // Sample data points
+        Map<Double, Double> dataPoints1 = new HashMap<>();
+        dataPoints1.put(1.0, 5.0);
+        dataPoints1.put(2.0, 10.0);
+        dataPoints1.put(3.0, 15.0);
+        dataPoints1.put(4.0, 20.0);
+
+        Map<Double, Double> dataPoints2 = new HashMap<>();
+        dataPoints2.put(1.0, 20.0);
+        dataPoints2.put(2.0, 15.0);
+        dataPoints2.put(3.0, 10.0);
+        dataPoints2.put(4.0, 5.0);
+
+        Map<Double, Double> dataPoints3 = new HashMap<>();
+        dataPoints3.put(1.0, 7.0);
+        dataPoints3.put(2.0, 14.0);
+        dataPoints3.put(3.0, 21.0);
+        dataPoints3.put(4.0, 28.0);
+
+        // Create list of data points maps
+        List<Map<Double, Double>> dataPointsList = Arrays.asList(dataPoints1, dataPoints2, dataPoints3);
+
+        // Create and set up the window
+        JFrame frame = new JFrame("Graph Panel");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+
+        // Create and set up the content pane
+        GraphPanel graphPanel = new GraphPanel(dataPointsList);
+        frame.add(graphPanel);
+
+        // Display the window
+        frame.setVisible(true);
     }
 }
